@@ -29,7 +29,7 @@ export default function Quiz() {
 
     setTimeout(() => {
       router.push("/history");
-    }, 3000);
+    }, 443000);
   }, [score, toast, router]);
 
   // ✅ Handle moving to the next question
@@ -95,8 +95,8 @@ export default function Quiz() {
 
   if (quizCompleted) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen text-center">
-        <h1 className="text-3xl font-bold text-green-600">🎉 Congratulations! 🎉</h1>
+<div className="text-center mb-[200px]  lg:mb-[1000px] md:mb-[500px]">      
+    <h1 className="text-3xl font-bold text-green-600">Congratulations!</h1>
         <h2 className="text-xl mt-2">You completed the quiz!</h2>
         <h2 className="text-xl mt-2 font-semibold">
           Your Score: {score} / {quizData.length}
