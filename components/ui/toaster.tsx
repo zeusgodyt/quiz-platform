@@ -16,18 +16,20 @@ export function Toaster() {
   return (
     <ToastProvider>
       {toasts.map(({ id, title, description, action, ...props }) => (
-        <Toast key={id} {...props}>
+        <Toast key={id} {...props} className="bg-red-500 text-white shadow-lg">
           <div className="grid gap-1">
-            {title && <ToastTitle>{title}</ToastTitle>}
-            {description && <ToastDescription>{description}</ToastDescription>}
+            {title && <ToastTitle className="text-white">{title}</ToastTitle>}
+            {description && (
+              <ToastDescription className="text-white">{description}</ToastDescription>
+            )}
           </div>
           {action}
-          <ToastClose />
+          <ToastClose className="text-white hover:text-gray-200" />
         </Toast>
       ))}
 
-      {/* ✅ Fixed: Toasts now appear at the top-center */}
-      <ToastViewport className="fixed top-5 left-1/2 transform -translate-x-1/2 w-auto max-w-md" />
+      {/* ✅ Ensures Toast is always TOP-RIGHT on all screen sizes */}
+      <ToastViewport className="fixed sm:top-8 sm:right-2 top-4 right-2 w-30 h-20 max-w-md z-[100] max-lg:mt-4 w-[165px]h-[90px]" />
     </ToastProvider>
   )
 }
