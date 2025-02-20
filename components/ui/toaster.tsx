@@ -15,8 +15,8 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(({ id, title, description, action, ...props }) => (
-        <Toast key={id} {...props} className="bg-red-500 text-white shadow-lg">
+      {toasts.map(({ id, title, description, action, className, ...props }) => (
+        <Toast key={id} {...props} className={`text-white shadow-lg ${className || ""}`}>
           <div className="grid gap-1">
             {title && <ToastTitle className="text-white">{title}</ToastTitle>}
             {description && (
@@ -28,12 +28,7 @@ export function Toaster() {
         </Toast>
       ))}
 
-      {/* ✅ Ensures Toast is always TOP-RIGHT on all screen sizes */}
-      <ToastViewport 
-  className="fixed sm:top-8 sm:right-2 top-4 right-2 
-             w-40 h-24 max-w-md z-[100] 
-             lg:w-80 lg:h-32"
-/>
+<ToastViewport className="fixed top-10 right-2 sm:top-8 lg:top-12 w-60 h-[90px] max-w-md z-[100]" />
     </ToastProvider>
-  )
+  );
 }

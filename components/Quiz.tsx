@@ -62,25 +62,46 @@ export default function Quiz() {
   const question = quizData[currentQuestion];
 
   function handleAnswer(option: string) {
+    const isCorrect = option === question.answer;
     setSelectedAnswer(option);
-    if (option === question.answer) {
+  
+    if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast({ title: "Correct!", description: "Well done!" });
+      toast({
+        title: "Correct!",
+        description: "Well done!",
+        className: "bg-green-500", // ✅ Green for correct
+      });
     } else {
-      toast({ title: "Wrong!", description: "Try again!" });
+      toast({
+        title: "Wrong!",
+        description: "Try again!",
+        className: "bg-red-500", // ✅ Red for wrong
+      });
     }
     setTimeout(handleNextQuestion, 1000);
   }
-
+  
   function handleIntegerSubmit() {
-    if (parseInt(integerAnswer) === question.answer) {
+    const isCorrect = parseInt(integerAnswer) === question.answer;
+    if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast({ title: "Correct!", description: "Well done!" });
+      toast({
+        title: "Correct!",
+        description: "Well done!",
+        className: "bg-green-500", // ✅ Green for correct
+      });
     } else {
-      toast({ title: "Wrong!", description: `Correct answer: ${question.answer}` });
+      toast({
+        title: "Wrong!",
+        description: `Correct answer: ${question.answer}`,
+        className: "bg-red-500", // ✅ Red for wrong
+      });
     }
     setTimeout(handleNextQuestion, 1000);
   }
+  
+  
 
   if (quizCompleted) {
     return (
