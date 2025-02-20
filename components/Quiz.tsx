@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation"; 
 import { quizData } from "@/lib/quizData";
-import { saveAttempt } from "@/lib/db"; // ✅ Removed `getAttempts`
+import { saveAttempt } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -19,20 +19,23 @@ export default function Quiz() {
   const [timer, setTimer] = useState(30);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
+  const router = useRouter(); // ✅ Initialize Next.js router
 
-  // ✅ Function to handle quiz completion
-  const handleQuizCompletion = useCallback(async () => {
+  // ✅ Automatically Redirect when Quiz Completes
+  useEffect(() => {
+    if (quizCompleted) {
+      setTimeout(() => {
+        router.push("/history"); // ✅ Redirect after 3 sec
+      }, 3000);
+    }
+  }, [quizCompleted, router]); // ✅ Dependency ensures execution
+
+  const handleQuizCompletion = async () => {
     await saveAttempt(score, quizData.length);
-    setQuizCompleted(true);
+    setQuizCompleted(true); // ✅ This will trigger useEffect()
     toast({ title: "Quiz Completed!", description: `Score: ${score}/${quizData.length}` });
+  };
 
-    setTimeout(() => {
-      router.push("/history");
-    }, 3000);
-  }, [score, toast, router]); // ✅ Added dependencies inside useCallback
-
-  // ✅ Function to handle next question
   const handleNextQuestion = useCallback(() => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -42,7 +45,7 @@ export default function Quiz() {
     } else {
       handleQuizCompletion(); 
     }
-  }, [currentQuestion, handleQuizCompletion]); // ✅ Added `handleQuizCompletion` as dependency
+  }, [currentQuestion, handleQuizCompletion]);
 
   useEffect(() => {
     if (timer === 0) {
@@ -50,7 +53,7 @@ export default function Quiz() {
     }
     const interval = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [timer, handleNextQuestion, currentQuestion, handleQuizCompletion]); // ✅ Added dependencies
+  }, [timer, handleNextQuestion]);
 
   if (!quizData || quizData.length === 0) {
     return <h1 className="text-center text-2xl font-bold mt-10">No Quiz Data Available</h1>;
