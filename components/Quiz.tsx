@@ -29,7 +29,7 @@ export default function Quiz() {
 
     setTimeout(() => {
       router.push("/history");
-    }, 443000);
+    }, 3000);
   }, [score, toast, router]);
 
   // ✅ Handle moving to the next question
