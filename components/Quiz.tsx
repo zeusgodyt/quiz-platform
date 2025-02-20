@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { quizData } from "@/lib/quizData";
 import { saveAttempt } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ export default function Quiz() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // ✅ Wrap `handleQuizCompletion` inside `useCallback` to prevent recreation
+  // ✅ Ensure quiz completion triggers the redirect
   const handleQuizCompletion = useCallback(async () => {
     await saveAttempt(score, quizData.length);
     setQuizCompleted(true);
@@ -30,9 +30,9 @@ export default function Quiz() {
     setTimeout(() => {
       router.push("/history");
     }, 3000);
-  }, [score, toast, router]); // ✅ Stable dependencies
+  }, [score, toast, router]);
 
-  // ✅ Wrap `handleNextQuestion` inside `useCallback`
+  // ✅ Handle moving to the next question
   const handleNextQuestion = useCallback(() => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -40,23 +40,28 @@ export default function Quiz() {
       setIntegerAnswer("");
       setTimer(30);
     } else {
-      handleQuizCompletion();
+      handleQuizCompletion(); // ✅ Ensure this is called
     }
   }, [currentQuestion, handleQuizCompletion]);
 
-  // ✅ Ensure `useEffect` only runs when needed
+  // ✅ Timer Logic
   useEffect(() => {
+    if (quizCompleted) return; // Stop the timer when the quiz is complete
+
     if (timer === 0) {
       if (currentQuestion === quizData.length - 1) {
-        handleQuizCompletion();
+        handleQuizCompletion(); // ✅ Call completion when timer runs out
       } else {
         handleNextQuestion();
       }
     }
 
-    const interval = setInterval(() => setTimer((t) => t - 1), 1000);
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+
     return () => clearInterval(interval);
-  }, [timer, currentQuestion, handleNextQuestion, handleQuizCompletion]);
+  }, [timer, currentQuestion, handleNextQuestion, handleQuizCompletion, quizCompleted]);
 
   if (!quizData || quizData.length === 0) {
     return <h1 className="text-center text-2xl font-bold mt-10">No Quiz Data Available</h1>;
@@ -70,17 +75,9 @@ export default function Quiz() {
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast({
-        title: "Correct!",
-        description: "Well done!",
-        className: "bg-green-500 text-white",
-      });
+      toast({ title: "Correct!", description: "Well done!", className: "bg-green-500 text-white" });
     } else {
-      toast({
-        title: "Wrong!",
-        description: "Try again!",
-        className: "bg-red-500 text-white",
-      });
+      toast({ title: "Wrong!", description: "Try again!", className: "bg-red-500 text-white" });
     }
     setTimeout(handleNextQuestion, 1000);
   }
@@ -89,32 +86,25 @@ export default function Quiz() {
     const isCorrect = parseInt(integerAnswer) === question.answer;
     if (isCorrect) {
       setScore((prev) => prev + 1);
-      toast({
-        title: "Correct!",
-        description: "Well done!",
-        className: "bg-green-500 text-white",
-      });
+      toast({ title: "Correct!", description: "Well done!", className: "bg-green-500 text-white" });
     } else {
-      toast({
-        title: "Wrong!",
-        description: `Correct answer: ${question.answer}`,
-        className: "bg-red-500 text-white",
-      });
+      toast({ title: "Wrong!", description: `Correct answer: ${question.answer}`, className: "bg-red-500 text-white" });
     }
     setTimeout(handleNextQuestion, 1000);
   }
 
   if (quizCompleted) {
     return (
-<div className="text-center mb-[200px] lg:mb-[1000px] md:mb-[300px]">
-  <h1 className="text-3xl font-bold text-green-600">Congratulations!🎉</h1>
-  <h2 className="text-xl mt-2">You completed the quiz!</h2>
-  <h2 className="text-xl mt-2 font-semibold">Your Score: {score} / {quizData.length}</h2>
-  <p className="text-gray-600 mt-3">Redirecting to quiz history in 3 seconds...</p>
-</div>
+      <div className="flex flex-col justify-center items-center h-screen text-center">
+        <h1 className="text-3xl font-bold text-green-600">🎉 Congratulations! 🎉</h1>
+        <h2 className="text-xl mt-2">You completed the quiz!</h2>
+        <h2 className="text-xl mt-2 font-semibold">
+          Your Score: {score} / {quizData.length}
+        </h2>
+        <p className="text-gray-600 mt-3">Redirecting to quiz history in 3 seconds...</p>
+      </div>
     );
   }
-  
 
   return (
     <>
