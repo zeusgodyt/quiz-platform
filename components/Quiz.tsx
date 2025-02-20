@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation"; // ✅ Import router
 import { quizData } from "@/lib/quizData";
 import { saveAttempt, getAttempts } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 
-// ✅ Define a type for attempts to avoid `any`
 type Attempt = {
   score: number;
   total: number;
@@ -24,10 +24,11 @@ export default function Quiz() {
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(30);
   const [quizCompleted, setQuizCompleted] = useState(false);
-  const [attempts, setAttempts] = useState<Attempt[]>([]); // ✅ Fixed `any` type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const [attempts, setAttempts] = useState<Attempt[]>([]);
   const { toast } = useToast();
+  const router = useRouter(); // ✅ Initialize Next.js router
 
-  // ✅ Load past attempts when component mounts
   useEffect(() => {
     async function fetchAttempts() {
       const storedAttempts = await getAttempts();
@@ -36,7 +37,6 @@ export default function Quiz() {
     fetchAttempts();
   }, []);
 
-  // ✅ Move `handleNextQuestion` to the top level to avoid React hook errors
   const handleNextQuestion = useCallback(async () => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -48,22 +48,24 @@ export default function Quiz() {
       setQuizCompleted(true);
       toast({ title: "Quiz Completed!", description: `Score: ${score}/${quizData.length}` });
 
-      // ✅ Refresh attempts after saving score
       setTimeout(async () => {
         const updatedAttempts = await getAttempts();
         setAttempts(updatedAttempts);
+
+        // ✅ Redirect to history page after 3 seconds
+        setTimeout(() => {
+          router.push("/history");
+        }, 3000);
       }, 500);
     }
-  }, [currentQuestion, score, toast]);
+  }, [currentQuestion, score, toast, router]);
 
-  // ✅ Ensure `handleNextQuestion` is in `useEffect` dependencies
   useEffect(() => {
     if (timer === 0) handleNextQuestion();
     const interval = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
   }, [timer, handleNextQuestion]);
 
-  // ✅ Prevents crashing if `quizData` is missing
   if (!quizData || quizData.length === 0) {
     return <h1 className="text-center text-2xl font-bold mt-10">No Quiz Data Available</h1>;
   }
@@ -81,7 +83,6 @@ export default function Quiz() {
     setTimeout(handleNextQuestion, 1000);
   }
 
-  // ✅ Handles integer type questions
   function handleIntegerSubmit() {
     if (parseInt(integerAnswer) === question?.answer) {
       setScore((prev) => prev + 1);
@@ -92,37 +93,22 @@ export default function Quiz() {
     setTimeout(handleNextQuestion, 1000);
   }
 
-  // ✅ Displays the final Scoreboard
   if (quizCompleted) {
     return (
       <div className="text-center mt-10">
-        <h1 className="text-2xl font-bold">Quiz Completed! 🎉</h1>
-        <h2 className="text-xl mt-2">Your Score: {score} / {quizData.length}</h2>
-        
-        {/* ✅ Show previous scores */}
-        {attempts.length > 0 && (
-          <div className="mt-4">
-            <h2 className="text-lg font-semibold">Previous Scores</h2>
-            <ul className="mt-2">
-              {attempts.map((attempt, index) => (
-                <li key={index} className="text-md">
-                  🔹 Attempt {index + 1}: {attempt.score}/{attempt.total} ({new Date(attempt.date).toLocaleString()})
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <Button className="mt-4" onClick={() => window.location.reload()}>Restart Quiz</Button>
+        <h1 className="text-3xl font-bold text-green-600">🎉 Congratulations! 🎉</h1>
+        <h2 className="text-xl mt-2">You completed the quiz!</h2>
+        <h2 className="text-xl mt-2 font-semibold">Your Score: {score} / {quizData.length}</h2>
+        <p className="text-gray-600 mt-4">Redirecting to quiz history in 3 seconds...</p>
       </div>
     );
   }
-// ✅ Display the current question
+
   return (
     <>
       <Toaster />
       <Card className="w-full max-w-lg mx-auto mt-5 mb-auto min-h-[300px] overflow-auto">
-      <CardHeader>
+        <CardHeader>
           <CardTitle>{question.question}</CardTitle>
         </CardHeader>
         <CardContent>
@@ -145,8 +131,6 @@ export default function Quiz() {
           )}
         </CardContent>
       </Card>
-    </>
+    </>  
   );
 }
-
-
