@@ -19,23 +19,20 @@ export default function Quiz() {
   const [timer, setTimer] = useState(30);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const { toast } = useToast();
-  const router = useRouter(); // ✅ Initialize Next.js router
+  const router = useRouter();
 
-  // ✅ Automatically Redirect when Quiz Completes
-  useEffect(() => {
-    if (quizCompleted) {
-      setTimeout(() => {
-        router.push("/history"); // ✅ Redirect after 3 sec
-      }, 3000);
-    }
-  }, [quizCompleted, router]); // ✅ Dependency ensures execution
-
-  const handleQuizCompletion = async () => {
+  // ✅ Wrap `handleQuizCompletion` inside `useCallback` to prevent recreation
+  const handleQuizCompletion = useCallback(async () => {
     await saveAttempt(score, quizData.length);
-    setQuizCompleted(true); // ✅ This will trigger useEffect()
+    setQuizCompleted(true);
     toast({ title: "Quiz Completed!", description: `Score: ${score}/${quizData.length}` });
-  };
 
+    setTimeout(() => {
+      router.push("/history");
+    }, 3000);
+  }, [score, toast, router]); // ✅ Stable dependencies
+
+  // ✅ Wrap `handleNextQuestion` inside `useCallback`
   const handleNextQuestion = useCallback(() => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
@@ -43,17 +40,23 @@ export default function Quiz() {
       setIntegerAnswer("");
       setTimer(30);
     } else {
-      handleQuizCompletion(); 
+      handleQuizCompletion();
     }
   }, [currentQuestion, handleQuizCompletion]);
 
+  // ✅ Ensure `useEffect` only runs when needed
   useEffect(() => {
     if (timer === 0) {
-      handleNextQuestion();
+      if (currentQuestion === quizData.length - 1) {
+        handleQuizCompletion();
+      } else {
+        handleNextQuestion();
+      }
     }
+
     const interval = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [timer, handleNextQuestion]);
+  }, [timer, currentQuestion, handleNextQuestion, handleQuizCompletion]);
 
   if (!quizData || quizData.length === 0) {
     return <h1 className="text-center text-2xl font-bold mt-10">No Quiz Data Available</h1>;
@@ -64,24 +67,24 @@ export default function Quiz() {
   function handleAnswer(option: string) {
     const isCorrect = option === question.answer;
     setSelectedAnswer(option);
-  
+
     if (isCorrect) {
       setScore((prev) => prev + 1);
       toast({
         title: "Correct!",
         description: "Well done!",
-        className: "bg-green-500", // ✅ Green for correct
+        className: "bg-green-500 text-white",
       });
     } else {
       toast({
         title: "Wrong!",
         description: "Try again!",
-        className: "bg-red-500", // ✅ Red for wrong
+        className: "bg-red-500 text-white",
       });
     }
     setTimeout(handleNextQuestion, 1000);
   }
-  
+
   function handleIntegerSubmit() {
     const isCorrect = parseInt(integerAnswer) === question.answer;
     if (isCorrect) {
@@ -89,19 +92,17 @@ export default function Quiz() {
       toast({
         title: "Correct!",
         description: "Well done!",
-        className: "bg-green-500", // ✅ Green for correct
+        className: "bg-green-500 text-white",
       });
     } else {
       toast({
         title: "Wrong!",
         description: `Correct answer: ${question.answer}`,
-        className: "bg-red-500", // ✅ Red for wrong
+        className: "bg-red-500 text-white",
       });
     }
     setTimeout(handleNextQuestion, 1000);
   }
-  
-  
 
   if (quizCompleted) {
     return (
@@ -141,6 +142,6 @@ export default function Quiz() {
           )}
         </CardContent>
       </Card>
-    </>  
+    </>
   );
 }
