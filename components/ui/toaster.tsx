@@ -29,7 +29,11 @@ export function Toaster() {
       ))}
 
       {/* ✅ Ensures Toast is always TOP-RIGHT on all screen sizes */}
-      <ToastViewport className="fixed sm:top-8 sm:right-2 top-4 right-2 w-30 h-20 max-w-md z-[100] max-lg:mt-4 w-[165px]h-[90px]" />
+      <ToastViewport 
+  className="fixed sm:top-8 sm:right-2 top-4 right-2 
+             w-40 h-24 max-w-md z-[100] 
+             lg:w-80 lg:h-32"
+/>
     </ToastProvider>
   )
 }
