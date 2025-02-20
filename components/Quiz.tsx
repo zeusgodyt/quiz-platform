@@ -1,21 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation"; // ✅ Import router
+import { useRouter } from "next/navigation"; 
 import { quizData } from "@/lib/quizData";
-import { saveAttempt, getAttempts } from "@/lib/db";
+import { saveAttempt } from "@/lib/db"; // ✅ Removed `getAttempts`
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-
-type Attempt = {
-  score: number;
-  total: number;
-  date: string;
-};
 
 export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -24,57 +18,49 @@ export default function Quiz() {
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(30);
   const [quizCompleted, setQuizCompleted] = useState(false);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const [attempts, setAttempts] = useState<Attempt[]>([]);
   const { toast } = useToast();
-  const router = useRouter(); // ✅ Initialize Next.js router
+  const router = useRouter();
 
-  useEffect(() => {
-    async function fetchAttempts() {
-      const storedAttempts = await getAttempts();
-      setAttempts(storedAttempts);
-    }
-    fetchAttempts();
-  }, []);
+  // ✅ Function to handle quiz completion
+  const handleQuizCompletion = useCallback(async () => {
+    await saveAttempt(score, quizData.length);
+    setQuizCompleted(true);
+    toast({ title: "Quiz Completed!", description: `Score: ${score}/${quizData.length}` });
 
-  const handleNextQuestion = useCallback(async () => {
+    setTimeout(() => {
+      router.push("/history");
+    }, 3000);
+  }, [score, toast, router]); // ✅ Added dependencies inside useCallback
+
+  // ✅ Function to handle next question
+  const handleNextQuestion = useCallback(() => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion((prev) => prev + 1);
       setSelectedAnswer(null);
       setIntegerAnswer("");
       setTimer(30);
     } else {
-      await saveAttempt(score, quizData.length);
-      setQuizCompleted(true);
-      toast({ title: "Quiz Completed!", description: `Score: ${score}/${quizData.length}` });
-
-      setTimeout(async () => {
-        const updatedAttempts = await getAttempts();
-        setAttempts(updatedAttempts);
-
-        // ✅ Redirect to history page after 3 seconds
-        setTimeout(() => {
-          router.push("/history");
-        }, 3000);
-      }, 500);
+      handleQuizCompletion(); 
     }
-  }, [currentQuestion, score, toast, router]);
+  }, [currentQuestion, handleQuizCompletion]); // ✅ Added `handleQuizCompletion` as dependency
 
   useEffect(() => {
-    if (timer === 0) handleNextQuestion();
+    if (timer === 0) {
+      handleNextQuestion();
+    }
     const interval = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [timer, handleNextQuestion]);
+  }, [timer, handleNextQuestion, currentQuestion, handleQuizCompletion]); // ✅ Added dependencies
 
   if (!quizData || quizData.length === 0) {
     return <h1 className="text-center text-2xl font-bold mt-10">No Quiz Data Available</h1>;
   }
 
-  const question = quizData[currentQuestion] ?? null;
+  const question = quizData[currentQuestion];
 
   function handleAnswer(option: string) {
     setSelectedAnswer(option);
-    if (option === question?.answer) {
+    if (option === question.answer) {
       setScore((prev) => prev + 1);
       toast({ title: "Correct!", description: "Well done!" });
     } else {
@@ -84,11 +70,11 @@ const [attempts, setAttempts] = useState<Attempt[]>([]);
   }
 
   function handleIntegerSubmit() {
-    if (parseInt(integerAnswer) === question?.answer) {
+    if (parseInt(integerAnswer) === question.answer) {
       setScore((prev) => prev + 1);
       toast({ title: "Correct!", description: "Well done!" });
     } else {
-      toast({ title: "Wrong!", description: `Correct answer: ${question?.answer}` });
+      toast({ title: "Wrong!", description: `Correct answer: ${question.answer}` });
     }
     setTimeout(handleNextQuestion, 1000);
   }

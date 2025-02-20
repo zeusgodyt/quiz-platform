@@ -30,7 +30,7 @@ export default function RootLayout({
         {/* ✅ Add a Navbar for Navigation */}
         <nav className="bg-gray-900 text-white p-4 flex justify-between items-center">
           <Link href="/" className="text-lg font-bold">🏠 Home</Link>
-          <Link href="/history" className="text-lg">📜 Quiz History</Link>
+          <Link href="/history/" className="text-lg">📜 Quiz History</Link>
         </nav>
 
         <main className="p-4">{children}</main>
