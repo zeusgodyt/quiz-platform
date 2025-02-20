@@ -83,15 +83,24 @@ export default function Quiz() {
   }
 
   function handleIntegerSubmit() {
-    const isCorrect = parseInt(integerAnswer) === question.answer;
+    const userAnswer = Number(integerAnswer);
+    
+    if (!Number.isInteger(userAnswer)) {
+      toast({ title: "Invalid Input", description: "Please enter a whole number.", className: "bg-yellow-500 text-white" });
+      return;
+    }
+  
+    const isCorrect = userAnswer === question.answer;
     if (isCorrect) {
       setScore((prev) => prev + 1);
       toast({ title: "Correct!", description: "Well done!", className: "bg-green-500 text-white" });
     } else {
       toast({ title: "Wrong!", description: `Correct answer: ${question.answer}`, className: "bg-red-500 text-white" });
     }
+    
     setTimeout(handleNextQuestion, 1000);
   }
+  
 
   if (quizCompleted) {
     return (
