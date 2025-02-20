@@ -84,8 +84,8 @@ export default function Quiz() {
 
   if (quizCompleted) {
     return (
-      <div className="text-center mt-10">
-        <h1 className="text-3xl font-bold text-green-600">🎉 Congratulations! 🎉</h1>
+      <div className="text-center mt-2">
+        <h1 className="text-3xl font-bold text-green-600 mt-2">🎉 Congratulations! 🎉</h1>
         <h2 className="text-xl mt-2">You completed the quiz!</h2>
         <h2 className="text-xl mt-2 font-semibold">Your Score: {score} / {quizData.length}</h2>
         <p className="text-gray-600 mt-4">Redirecting to quiz history in 3 seconds...</p>
