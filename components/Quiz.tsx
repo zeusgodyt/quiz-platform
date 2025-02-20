@@ -23,14 +23,18 @@ export default function Quiz() {
 
   // ✅ Ensure quiz completion triggers the redirect
   const handleQuizCompletion = useCallback(async () => {
-    await saveAttempt(score, quizData.length);
+    await saveAttempt(score, quizData.length); // Ensure attempt is saved before redirecting
+  
     setQuizCompleted(true);
     toast({ title: "Quiz Completed!", description: `Score: ${score}/${quizData.length}` });
-
+  
+    // Short delay before navigating to history
     setTimeout(() => {
+      router.refresh(); // Ensures latest data is fetched
       router.push("/history");
     }, 3000);
   }, [score, toast, router]);
+  
 
   // ✅ Handle moving to the next question
   const handleNextQuestion = useCallback(() => {

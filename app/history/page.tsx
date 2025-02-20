@@ -16,11 +16,13 @@ export default function HistoryPage() {
 
   useEffect(() => {
     async function fetchAttempts() {
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay before fetching data
       const storedAttempts = await getAttempts();
       setAttempts(storedAttempts);
     }
     fetchAttempts();
   }, []);
+  
 
   return (
     <main className="flex flex-col items-center min-h-screen p-5">
