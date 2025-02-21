@@ -22,6 +22,6 @@ This is an **interactive quiz platform** built with **Next.js (App Router), Reac
 ## 🏗️ Getting Started
 ### 1️⃣ Clone the Repository
 ```sh
-git clone https://github.com/yourusername/interactive-quiz-platform.git
+git clone https://github.com/zeusgodyt/quiz-platform.git
 cd interactive-quiz-platform
 
