@@ -24,4 +24,7 @@ This is an **interactive quiz platform** built with **Next.js (App Router), Reac
 ```sh
 git clone https://github.com/zeusgodyt/quiz-platform.git
 cd interactive-quiz-platform
+```
 
+## 🏗️ Deployed Link
+https://quiz-platform-git-main-anuragkumar6240-gmailcoms-projects.vercel.app/
